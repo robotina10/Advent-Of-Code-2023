@@ -5,35 +5,13 @@
 #include <regex>
 #include <ctype.h>
 
-int getInt(int row, int col, std::vector<std::string> &grid)
-{
-  int i = col;
-  std::string num;
-  while (i > 0) {
-    i--;
-    if (!std::isdigit(grid[row][i])) {
-      i++;
-      break;
-    }
-  }
-
-  while (i < grid[0].size()) {
-    if (std::isdigit(grid[row][i])) {
-      num.push_back(grid[row][i++]);
-    }
-    else
-      break;
-  }
-  return std::stoi(num);
-}
-
-int adjacentNumSum(int row, int col, std::vector<std::string> &grid)
+int hasAdjacentSymbol(int row, int col, int digits, std::vector<std::string> &grid)
 {
   int endRow = row;
-  int endCol = col;
-  if (row < grid.size())
+  int endCol = col + digits;
+  if (endRow + 1 < grid.size())
     endRow++;
-  if (col < grid[0].size())
+  if (endCol + 1 < grid[0].size())
     endCol++;
 
   if (row > 0)
@@ -41,17 +19,14 @@ int adjacentNumSum(int row, int col, std::vector<std::string> &grid)
   if (col > 0)
     col -= 1;
 
-  int sum = 0;
   for (int i = row; i <= endRow; i++) {
     for (int j = col; j <= endCol; j++) {
-      if (std::isdigit(grid[i][j])) {
-        std::cout << i << " " << j << " " << getInt(i, j, grid) << std::endl;
-        sum += getInt(i, j, grid);
+      if (grid[i][j] != '.' && !std::isdigit(grid[i][j])) {
+        return 1;
       }
     }
   }
-  
-  return sum;
+  return 0;
 }
 
 int main()
@@ -64,7 +39,6 @@ int main()
   }
 
   std::string line;
-  int sum = 0;
 
   std::vector<std::string> grid;
   while (std::getline(input, line)) {
@@ -73,15 +47,19 @@ int main()
 
   input.close();
 
-  std::regex pattern("([-+*/=!?@#$%&])");
+  std::regex pattern("(\\d+)");
   std::smatch match;
 
   int col = 0;
-  for (int i = 0; i < 5/* grid.size()*/; i++) {
+  int sum = 0;
+  for (int i = 0; i < grid.size(); i++) {
     line = grid[i];
     while (std::regex_search(line, match, pattern)) {
-      col +=  match.position();
-      sum += adjacentNumSum(i, col, grid);
+      col += match.position();
+      if (hasAdjacentSymbol(i, col, match[1].str().length() - 1, grid)) {
+        sum += std::stoi(match[1].str());
+      }
+      col += match[1].str().length();
       line = match.suffix();
     }
     col = 0;
