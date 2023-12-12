@@ -11,10 +11,6 @@ int isAdjacent(int col, int startPos, int endPos)
   int b = startPos == col - 1 || endPos == col - 1;
   int c = startPos == col + 1 || endPos == col + 1;
   int d = startPos < col && endPos > col;
-  //a = 0;
-  //b = 0;
-  //c = 0;
-  //d = 0;
   if (a || b || c || d)
     return 1;
   return 0;
