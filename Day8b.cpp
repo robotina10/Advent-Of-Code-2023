@@ -31,8 +31,7 @@ class HashTable
 
   void insertItem(const Node &a);
 
-  Node get(const std::string &s);
-
+  bool get(const std::string &s, Node &node);
 };
 
 void HashTable::insertItem(const Node &a)
@@ -41,14 +40,43 @@ void HashTable::insertItem(const Node &a)
   table[hash].push_back(a);
 }
 
-Node HashTable::get(const std::string &s)
+bool HashTable::get(const std::string &s, Node &node)
 {
   int hash = hashFunc(s);
   for (const Node &n: table[hash]) {
     if (s == n.start) {
-      return n;
+      node = n;
+      return true;
     }
   }
+  return false;
+}
+
+long long gcd(long long a, long long b) // greatest common divisor
+{
+  while (b != 0) {
+    long long temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+}
+
+long long lcm(long long a, long long b) // least common multiple
+{
+  if (a && b) {
+    return std::abs(a * b) / gcd(a, b);
+  }
+  return 0;
+}
+
+long long lcmOfVector(std::vector<int> v)
+{
+  long long result = v[0];
+  for (int i = 1; i < v.size(); i++) {
+    result = lcm(result, v[i]);
+  }
+  return result;
 }
 
 int main()
@@ -59,7 +87,7 @@ int main()
     return -1;
   }
 
-  std::regex pattern("([A-Z]{3}) = \\(([A-Z]{3}), ([A-Z]{3})\\)");
+  std::regex pattern("([A-Z0-9]{3}) = \\(([A-Z0-9]{3}), ([A-Z0-9]{3})\\)");
   std::smatch matches;
 
   std::string instructions;
@@ -72,39 +100,33 @@ int main()
     if (std::regex_search(line, matches, pattern)) {
       Node n = {matches[1].str(), matches[2].str(), matches[3].str()};
       hashTable.insertItem(n);
-      if (matches[1].str()[n.start.size() - 1] == 'A') {
+      if (matches[1].str().back() == 'A') {
         A.push_back(n);
       }
     }
   }
-  for (Node n: A){
-  std::cout << n.start << std::endl;}
   input.close();
 
-  int steps = 0;
-  while (true) {
-    int index = steps % instructions.size();
-    for (int i = 0; i < A.size(); i++) {
+  std::vector<int> stepsToZ;
+  for (int i = 0; i < A.size(); i++) {
+    int steps = 0;
+    while (true) {
+      int index = steps % instructions.size();
       if (instructions[index] == 'L') {
-        A[i] = hashTable.get(A[i].left);
+        hashTable.get(A[i].left, A[i]);
       }
       else {
-        A[i] = hashTable.get(A[i].right);
+        hashTable.get(A[i].right, A[i]);
       }
-    }
-    steps++;
-
-    int brk = 1;
-    for (const Node &n: A) {
-      if (n.start[n.start.size() - 1] != 'Z') {
-        brk = 0;
+      steps++;
+      if (A[i].start.back() == 'Z') {
+        stepsToZ.push_back(steps);
         break;
       }
     }
-    if (brk) {
-      break;
-    }
   }
+
+  long long steps = lcmOfVector(stepsToZ);
 
   std::cout << "steps = " << steps << std::endl;
  
