@@ -33,9 +33,9 @@ void generateDifferences(std::vector<std::vector<int>> &vec)
 int extrapolate(std::vector<std::vector<int>> &vec )
 {
   for (int i = vec.size() - 1; i > 0; i--) {
-    vec[i - 1].push_back(vec[i][vec[i].size() - 1] + vec[i - 1][vec[i- 1].size() - 1]);
+    vec[i - 1].insert(vec[i-1].begin(), vec[i - 1][0] - vec[i][0]);
   }
-  return vec[0][vec[0].size() - 1];
+  return vec[0][0];
 }
 
 int main()
@@ -62,6 +62,6 @@ int main()
     sum += extrapolate(extrapolations);
   }
 
-  std::cout << "Sum of extapolated values is " << sum << std::endl;
+  std::cout << "Sum of extapolated previous values is " << sum << std::endl;
   return 0;
 }
